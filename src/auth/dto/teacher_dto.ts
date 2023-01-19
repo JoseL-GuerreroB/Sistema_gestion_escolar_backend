@@ -1,13 +1,13 @@
-import { OmitType, PickType } from '@nestjs/mapped-types';
+import { IntersectionType, OmitType, PickType } from '@nestjs/mapped-types';
 import {
   IsOptional,
   IsString,
   Length,
   ValidationArguments,
 } from 'class-validator';
-import Employe from './employe_dto';
+import { Employe_DTO } from './employe_dto';
 
-export class Create_Teacher_DTO extends Employe {
+export class Teacher {
   @IsString({
     message: 'La especialidad debe ser un valor de tipo string',
   })
@@ -21,6 +21,11 @@ export class Create_Teacher_DTO extends Employe {
   })
   speciality: string;
 }
+
+export class Create_Teacher_DTO extends IntersectionType(
+  Employe_DTO,
+  Teacher,
+) {}
 
 export class Update_Public_Data_Teacher_DTO extends PickType(
   Create_Teacher_DTO,

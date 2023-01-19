@@ -1,4 +1,4 @@
-import { OmitType, PickType } from '@nestjs/mapped-types';
+import { IntersectionType, OmitType, PickType } from '@nestjs/mapped-types';
 import {
   IsInt,
   IsNumber,
@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { User } from './user_dto';
 
-export class Create_Student_DTO extends User {
+export class Student {
   @IsString({
     message: 'El nombre del tutor debe ser un valor de tipo string',
   })
@@ -22,7 +22,7 @@ export class Create_Student_DTO extends User {
         return 'El nombre del tutor debe contener por lo mucho 100 caracteres';
     },
   })
-  readonly tutor: string;
+  tutor: string;
 
   @IsString({
     message: 'El telefono del tutor debe ser un valor de tipo string',
@@ -33,7 +33,7 @@ export class Create_Student_DTO extends User {
       else return 'El telefono del usuario debe contener 10 caracteres.';
     },
   })
-  readonly tutor_phone: string;
+  tutor_phone: string;
 
   @IsOptional()
   @IsNumber(undefined, {
@@ -42,8 +42,10 @@ export class Create_Student_DTO extends User {
   @IsInt({
     message: 'El grado y grupo no se selecciono adecuadamente',
   })
-  readonly grade_and_group?: number;
+  grade_and_group?: number;
 }
+
+export class Create_Student_DTO extends IntersectionType(User, Student) {}
 
 export class Update_Public_Data_Student_DTO extends PickType(User, [
   'username',
@@ -60,5 +62,5 @@ export class Update_Private_Data_Student_DTO extends OmitType(
   @IsInt({
     message: 'El status del estudiante no se selecciono adecuadamente',
   })
-  readonly status_student: number;
+  status_student: number;
 }

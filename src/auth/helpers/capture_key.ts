@@ -26,3 +26,9 @@ export const propsUserSchema = {
   email: '',
   password: '',
 };
+
+export const propsStudentSchema = {
+  tutor: '',
+  tutor_phone: '',
+  status_student: 0,
+};

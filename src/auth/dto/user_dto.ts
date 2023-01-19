@@ -14,7 +14,6 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { HasCharacters } from 'decorators/HasCharacters';
-import { UnusedUsername } from '../decorators/UnusedUserename';
 
 export class User {
   @IsString({
@@ -36,10 +35,7 @@ export class User {
         return 'El username no debe tener numeros ni caracteres especiales al principio de la cadena';
     },
   })
-  @UnusedUsername({
-    message: 'El nombre de usuario ya no esta disponible',
-  })
-  readonly username: string;
+  username: string;
 
   @IsString({
     message: 'El nombre del usuario debe ser un string',
@@ -53,7 +49,7 @@ export class User {
         return 'El nombre del usuario debe contener por lo mucho 30 caracteres';
     },
   })
-  readonly first_name: string;
+  first_name: string;
 
   @IsString({
     message: 'Los apellidos del usuario deben ser un string',
@@ -67,13 +63,13 @@ export class User {
         return 'Los apellidos del usuario deben contener por lo mucho 30 caracteres';
     },
   })
-  readonly last_name: string;
+  last_name: string;
 
   // Crear un validador para fechas
   @IsString({
     message: 'La fecha de nacimiento debe ser una fecha valida',
   })
-  readonly date_of_birth: string;
+  date_of_birth: string;
 
   @IsNumber(undefined, {
     message: 'La edad debe ser un valor numerico',
@@ -90,7 +86,7 @@ export class User {
   @Max(120, {
     message: 'La edad maxima para ingresar es de 120 años',
   })
-  readonly age: number;
+  age: number;
 
   @IsString({
     message: 'La dirección del usuario deben ser un string',
@@ -104,12 +100,12 @@ export class User {
         return 'La dirección del usuario deben contener por lo mucho 30 caracteres';
     },
   })
-  readonly address: string;
+  address: string;
 
   @IsIn(['No especificado', 'Masculino', 'Femenino'], {
     message: 'No seleccionaste un genero permitido.',
   })
-  readonly gender: string;
+  gender: string;
 
   @IsString({
     message: 'La nacionalidad del usuario debe ser un string',
@@ -123,7 +119,7 @@ export class User {
         return 'La nacionalidad del usuario deben contener por lo mucho 20 caracteres';
     },
   })
-  readonly nationality: string;
+  nationality: string;
 
   @IsOptional()
   @IsString({
@@ -132,12 +128,12 @@ export class User {
   @Length(10, 10, {
     message: 'El telefono del usuario debe contener 10 caracteres.',
   })
-  readonly phone?: string;
+  phone?: string;
 
   @IsEmail(undefined, {
     message: 'El formato del correo electronico no es correcto',
   })
-  readonly email: string;
+  email: string;
 
   @IsStrongPassword(
     {
@@ -151,7 +147,7 @@ export class User {
         'La contraseña debe tener 8 caracteres como minimo, un numero, una letra en mayuscula y un simbolo.',
     },
   )
-  readonly password: string;
+  password: string;
 }
 
 export class Preform_Password_Recovery_DTO extends PickType(User, [
