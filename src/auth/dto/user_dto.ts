@@ -150,6 +150,8 @@ export class User {
   password: string;
 }
 
+export class Login_DTO extends PickType(User, ['email', 'password']) {}
+
 export class Preform_Password_Recovery_DTO extends PickType(User, [
   'username',
   'email',

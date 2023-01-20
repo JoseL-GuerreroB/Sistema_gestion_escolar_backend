@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpException, Post } from '@nestjs/common';
 import { AuthStudentService } from '../services/auth_student.service';
 import {
   keysStudentData,
@@ -6,10 +6,15 @@ import {
   propsUserSchema,
 } from '../helpers/capture_key';
 import { Create_Student_DTO } from '../dto/student_dto';
+import { Login_DTO } from '../dto/user_dto';
+import { AuthPreservice } from '../services/auth_pre.service';
 
 @Controller('auth')
 export class AuthStudentController {
-  constructor(private readonly authStudentService: AuthStudentService) {}
+  constructor(
+    private readonly authPreservice: AuthPreservice,
+    private readonly authStudentService: AuthStudentService,
+  ) {}
 
   @Post('register_student')
   async Register_Student(@Body() newStudent: Create_Student_DTO) {
@@ -20,21 +25,43 @@ export class AuthStudentController {
       if (!keysStudentData.includes(key)) propsUser[key] = values;
       else propsStudent[key] = values;
     });
-    const incompleteRegister =
-      await this.authStudentService.Incomplete_Register(
-        propsUser.username,
-        propsUser.email,
+    try {
+      const incompleteRegister =
+        await this.authStudentService.Incomplete_Register_Student(
+          propsUser.username,
+          propsUser.email,
+        );
+      if (incompleteRegister === false) {
+        user = await this.authPreservice.Create_User(propsUser, 1);
+      } else {
+        user = incompleteRegister;
+      }
+      const student = await this.authStudentService.Create_Student(
+        propsStudent,
+        user,
+        1,
       );
-    if (incompleteRegister === false) {
-      user = await this.authStudentService.Create_User(propsUser, 1);
-    } else {
-      user = incompleteRegister;
+      const accessToken = await this.authPreservice.generateToken(
+        student.id,
+        student.user.type_user.type_user,
+      );
+      return { accessToken, student };
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
     }
-    const student = await this.authStudentService.Create_Student(
-      propsStudent,
-      user,
-      1,
-    );
-    return { User_Information: user, Student_Information: student };
+  }
+
+  @Post('login_student')
+  async Login(@Body() dataLogin: Login_DTO) {
+    try {
+      const student = await this.authStudentService.Login_Student(dataLogin);
+      const accessToken = await this.authPreservice.generateToken(
+        student.id,
+        student.user.type_user.type_user,
+      );
+      return { accessToken, student };
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
   }
 }
