@@ -6,10 +6,12 @@ import { Login_DTO } from '../dto/user_dto';
 import { StatusStudents } from '../entities/status_atr.entity';
 import Students from '../entities/student.entity';
 import Users from '../entities/user.entity';
+import { keysStudentData } from '../helpers/capture_key';
 import { userLogin } from '../helpers/validators/validators_user';
+import { validatorUpdateUsernameAndEmail } from '../helpers/validators/validator_students';
 
 @Injectable()
-export class AuthStudentService {
+export default class AuthStudentService {
   constructor(
     @InjectRepository(Users) private usersRepository: Repository<Users>,
     @InjectRepository(Students)
@@ -17,23 +19,6 @@ export class AuthStudentService {
     @InjectRepository(StatusStudents)
     private statusStudentsRepository: Repository<StatusStudents>,
   ) {}
-
-  async Incomplete_Register_Student(username: string, email: string) {
-    const existUser = await this.usersRepository.findOne({
-      where: {
-        username,
-        email,
-      },
-    });
-    if (!existUser) return false;
-    const existStudent = await this.studentsRepositoty.findOne({
-      where: {
-        user: existUser,
-      },
-    });
-    if (existStudent) return false;
-    return existUser;
-  }
 
   async Create_Student(
     newStudent: Student,
@@ -75,5 +60,63 @@ export class AuthStudentService {
         HttpStatus.NOT_FOUND,
       );
     return existStudent;
+  }
+
+  Student_Data_Separation(data: any) {
+    const propsUser = {};
+    const propsStudent = {};
+    Object.entries(data).forEach(([key, values]) => {
+      if (!keysStudentData.includes(key)) propsUser[key] = values;
+      else propsStudent[key] = values;
+    });
+    return { propsUser, propsStudent };
+  }
+
+  async Update_Student(
+    idUser: number,
+    newDataUser: object,
+    idStudent: number,
+    newDataStudent?: object,
+  ) {
+    console.log(newDataUser, newDataStudent);
+    const data = await validatorUpdateUsernameAndEmail(
+      idUser,
+      newDataUser['username'],
+      newDataUser['email'],
+      this.usersRepository,
+    );
+    console.log(data);
+    if (data.username === false) newDataUser['username'] = undefined;
+    const user = newDataUser;
+    if (newDataStudent) {
+      if (data.email === false) newDataUser['email'] = undefined;
+      const student = newDataStudent;
+      const status_student = await this.statusStudentsRepository.findOne({
+        where: {
+          id: newDataStudent['status_student'],
+        },
+      });
+      student['status_student'] = status_student;
+      await this.studentsRepositoty.update({ id: idStudent }, student);
+    }
+    await this.usersRepository.update({ id: idUser }, user);
+    return await this.Sesion_Student_With_Jwt(idStudent);
+  }
+
+  async Del_Student(idUser: number, idStudent: number) {
+    await this.studentsRepositoty.delete({ id: idStudent });
+    await this.usersRepository.delete({ id: idUser });
+    return { ok: true, message: 'Estudiante eliminado' };
+  }
+
+  async Sesion_Student_With_Jwt(id: number) {
+    const student = await this.studentsRepositoty.findOne({
+      relations: ['user', 'user.type_user', 'status_student'],
+      where: {
+        id,
+      },
+    });
+    student.user.password = undefined;
+    return student;
   }
 }

@@ -15,20 +15,20 @@ export const keysEmployeData = [
 export const keysTeacherData = ['speciality', 'presentation'];
 
 export const propsUserSchema = {
-  username: '',
-  first_name: '',
-  last_name: '',
-  date_of_birth: '',
-  age: 0,
-  address: '',
-  gender: '',
-  nationality: '',
-  email: '',
-  password: '',
+  username: undefined,
+  first_name: undefined,
+  last_name: undefined,
+  date_of_birth: undefined,
+  age: undefined,
+  address: undefined,
+  gender: undefined,
+  nationality: undefined,
+  email: undefined,
+  password: undefined,
 };
 
 export const propsStudentSchema = {
-  tutor: '',
-  tutor_phone: '',
-  status_student: 0,
+  tutor: undefined,
+  tutor_phone: undefined,
+  status_student: undefined,
 };

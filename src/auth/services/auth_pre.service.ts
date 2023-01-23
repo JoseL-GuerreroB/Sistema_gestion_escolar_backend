@@ -1,16 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { Repository } from 'typeorm';
 import { encryptPassword } from '../helpers/bcrypt';
-import { User } from '../dto/user_dto';
+import { usernameAndEmailAlreadyRegistered } from '../helpers/validators/validators_user';
+import { Response } from 'express';
+
 import { TypesUsers } from '../entities/type_atr.entity';
 import Users from '../entities/user.entity';
-import { usernameAndEmailAlreadyRegistered } from '../helpers/validators/validators_user';
 
 @Injectable()
-export class AuthPreservice {
+export default class AuthPreservice {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
@@ -19,7 +20,7 @@ export class AuthPreservice {
     private typesUsersRepository: Repository<TypesUsers>,
   ) {}
 
-  async Create_User(newUser: User, type_user: number) {
+  async Create_User(newUser: any, type_user: number) {
     await usernameAndEmailAlreadyRegistered(
       this.usersRepository,
       newUser.username,
@@ -42,14 +43,35 @@ export class AuthPreservice {
     return await this.usersRepository.save(user);
   }
 
-  async generateToken(id: number, type_user: string, type_employe?: string) {
+  async Find_User_for_Change_Password(
+    username: string,
+    email: string,
+    phone: string,
+  ) {
+    const user = await this.usersRepository.findOne({
+      select: ['id'],
+      where: {
+        username,
+        email,
+        phone,
+      },
+    });
+    if (!user)
+      throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+    return user;
+  }
+
+  async Change_Password(id: number, dataPassword: string) {
+    const password = await encryptPassword(dataPassword);
+    await this.usersRepository.update({ id }, { password });
+  }
+
+  async generateToken(id: number, secondLevel: string, thirdLevel: string) {
     const JwtPayload: object = {
       id,
-      type_user,
+      secondLevel,
     };
-    if (type_user === 'Empleado') {
-      JwtPayload['type_employe'] = type_employe;
-    }
+    if (thirdLevel) JwtPayload['thirdLevel'] = thirdLevel;
     return await this.jwtService.signAsync(JwtPayload, {
       secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
       expiresIn: '15m',
@@ -58,18 +80,28 @@ export class AuthPreservice {
 
   async generateRefreshToken(
     id: number,
-    type_user: string,
-    type_employe?: string,
+    secondLevel: string,
+    thirdLevel: string | null,
+    res: Response,
   ) {
     const JwtPayload: object = {
       id,
-      type_user,
+      secondLevel,
     };
-    if (type_user === 'Empleado') {
-      JwtPayload['type_employe'] = type_employe;
-    }
-    return await this.jwtService.signAsync(JwtPayload, {
+    if (thirdLevel !== null) JwtPayload['thirdLevel'] = thirdLevel;
+    const refreshToken = await this.jwtService.signAsync(JwtPayload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+    });
+    res.cookie('refresh_token', refreshToken, { httpOnly: true });
+  }
+
+  async generateTokenPassword(id: number) {
+    const JwtPayload: object = {
+      id,
+    };
+    return await this.jwtService.signAsync(JwtPayload, {
+      secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+      expiresIn: '5m',
     });
   }
 }
