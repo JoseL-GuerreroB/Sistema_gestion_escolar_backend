@@ -1,4 +1,4 @@
-import { PickType } from '@nestjs/mapped-types';
+import { OmitType, PickType } from '@nestjs/mapped-types';
 import {
   IsEmail,
   IsIn,
@@ -149,6 +149,17 @@ export class User {
   )
   password: string;
 }
+
+export class Update_Public_User extends PickType(User, [
+  'username',
+  'phone',
+] as const) {}
+
+export class Update_Private_User extends OmitType(User, [
+  'password',
+] as const) {}
+
+// ------------------- Auth User -----------------
 
 export class Login_DTO extends PickType(User, ['email', 'password']) {}
 

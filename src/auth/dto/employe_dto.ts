@@ -2,11 +2,12 @@ import { IntersectionType } from '@nestjs/mapped-types';
 import {
   IsInt,
   IsNumber,
+  IsOptional,
   IsString,
   Length,
   ValidationArguments,
 } from 'class-validator';
-import { User } from './user_dto';
+import { Update_Private_User, Update_Public_User, User } from './user_dto';
 
 export class Employe {
   @IsString({
@@ -25,26 +26,19 @@ export class Employe {
   @Length(8, 25, {
     message: (arg: ValidationArguments) => {
       if (!arg.value) return 'El campo de dias de trabajo es requerida.';
-      else if (arg.value.length <= 4)
-        return 'El campo de dias de trabajo debe contener al menos 4 caracteres.';
+      else if (arg.value.length <= 7)
+        return 'El campo de dias de trabajo debe contener al menos 8 caracteres.';
       else
         return 'El campo de dias de trabajo debe contener por lo mucho 25 caracteres';
     },
   })
   days_to_work: string;
 
+  @IsOptional()
   @IsString({
     message: 'Las observaciones deben ser un valor de tipo string',
   })
   observations?: string;
-
-  @IsNumber(undefined, {
-    message: 'El tipo del empleado no se selecciono adecuadamente',
-  })
-  @IsInt({
-    message: 'El tipo del empleado no se selecciono adecuadamente',
-  })
-  type_employe: number;
 
   @IsNumber(undefined, {
     message: 'El trabajo del empleado no se selecciono adecuadamente',
@@ -56,3 +50,26 @@ export class Employe {
 }
 
 export class Employe_DTO extends IntersectionType(User, Employe) {}
+
+export class Update_Public_Employe extends Update_Public_User {}
+
+export class Update_Private_Employe extends IntersectionType(
+  Update_Private_User,
+  Employe,
+) {
+  @IsNumber(undefined, {
+    message: 'El tipo del empleado no se selecciono adecuadamente',
+  })
+  @IsInt({
+    message: 'El tipo del empleado no se selecciono adecuadamente',
+  })
+  type_employe: number;
+
+  @IsNumber(undefined, {
+    message: 'El status del empleado no se selecciono adecuadamente',
+  })
+  @IsInt({
+    message: 'El status del empleado no se selecciono adecuadamente',
+  })
+  status_employe: number;
+}

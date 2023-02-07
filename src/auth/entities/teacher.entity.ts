@@ -18,6 +18,15 @@ export default class Teachers {
   @Column('varchar', { length: 100 })
   speciality: string;
 
+  @Column('varchar', { length: 20 })
+  cubicle: string;
+
+  @Column('float', { nullable: true })
+  pass_rate: number;
+
+  @Column('float', { nullable: true })
+  failure_rate: number;
+
   @OneToOne(() => Employees)
   @JoinColumn()
   employe: Employees;

@@ -5,29 +5,39 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  Patch,
   Post,
-  Put,
   Req,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { Request, Response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express, Request, Response } from 'express';
 
 import {
   Form_Password_Recovery_DTO,
   Login_DTO,
   Preform_Password_Recovery_DTO,
 } from '../dto/user_dto';
+import { keySesionType } from '../helpers/capture_key';
+import EmployeService from '../services/employe.service';
 
-import AuthPreservice from '../services/auth_pre.service';
-import AuthStudentService from '../services/auth_student.service';
+import StudentService from '../services/student.service';
+import TeacherService from '../services/teacher.service';
+import TokenService from '../services/token.service';
+import UserService from '../services/user.service';
 
 @Controller('app')
 export default class SesionsController {
   constructor(
-    private readonly authPreservice: AuthPreservice,
-    private readonly authStudentService: AuthStudentService,
+    private readonly userService: UserService,
+    private readonly studentService: StudentService,
+    private readonly employeService: EmployeService,
+    private readonly teacherService: TeacherService,
+    private readonly tokenService: TokenService,
   ) {}
 
   @Get('pre_sesion')
@@ -35,7 +45,7 @@ export default class SesionsController {
   async Pre_Sesion(@Req() req: Request) {
     const userEntity = req.user;
     try {
-      const accessToken = await this.authPreservice.generateToken(
+      const accessToken = await this.tokenService.generateToken(
         userEntity['id'],
         userEntity['secondLevel'],
         userEntity['thirdLevel'],
@@ -51,32 +61,25 @@ export default class SesionsController {
   async Sesion(@Req() req: Request) {
     const user = req.user;
     try {
-      const arbol = {
-        Estudiante: await this.authStudentService.Sesion_Student_With_Jwt(
-          user['id'],
-        ),
+      const typeSesion = {
+        Estudiante: async (userid: any) =>
+          await this.studentService.Sesion_Student_With_Jwt(userid),
+        Maestro: async (userid: any) =>
+          await this.teacherService.Sesion_Teacher_With_Jwt(userid),
       };
       let userEntity: object;
-      console.log(user['thirdLevel']);
-      if (user['thirdLevel']) {
-        if (Object.keys(arbol).includes(user['thirdLevel']))
-          userEntity = arbol[`${user['thirdLevel']}`];
-        else
-          throw new HttpException(
-            'Error del servidor.',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-      } else {
-        if (Object.keys(arbol).includes(user['secondLevel']))
-          userEntity = arbol[`${user['secondLevel']}`];
-        else
-          throw new HttpException(
-            'Error del servidor.',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-      }
-      return { ok: true, userEntity };
+      if (Object.keys(typeSesion).includes(user['secondLevel']))
+        userEntity = typeSesion[`${user['secondLevel']}`](user['id']);
+      else if (Object.keys(typeSesion).includes(user['thirdLevel']))
+        userEntity = typeSesion[`${user['thirdLevel']}`](user['id']);
+      else
+        throw new HttpException(
+          'Error del servidor.',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      return userEntity;
     } catch (error) {
+      console.log(error);
       throw new HttpException(error.message, error.status);
     }
   }
@@ -91,19 +94,29 @@ export default class SesionsController {
   @Post('login/:type')
   async Login(
     @Param('type') type: string,
-    @Body() dataLogin: Login_DTO,
+    @Body() data: Login_DTO,
     @Res({ passthrough: true }) res: Response,
   ) {
     let userEntity: any;
     const dataLevels = [];
     try {
-      if (type === 'Estudiante') {
-        userEntity = await this.authStudentService.Login_Student(dataLogin);
-      } else
-        throw new HttpException(
-          'funcionalidad no implementada',
-          HttpStatus.HTTP_VERSION_NOT_SUPPORTED,
-        );
+      const user = await this.userService.User_Login(data.email, data.password);
+      switch (type) {
+        case 'Estudiante':
+          userEntity = await this.studentService.Login_Student(user);
+          break;
+        case 'Maestro':
+          const employe = await this.employeService.Find_Employe_For_Login(
+            user,
+          );
+          userEntity = await this.teacherService.Login_Teacher(employe);
+          break;
+        default:
+          throw new HttpException(
+            'funcionalidad no implementada',
+            HttpStatus.HTTP_VERSION_NOT_SUPPORTED,
+          );
+      }
       dataLevels[0] = userEntity.id;
       dataLevels[1] = userEntity.user
         ? userEntity.user.type_user.type_user
@@ -111,50 +124,86 @@ export default class SesionsController {
       dataLevels[2] = userEntity.employe
         ? userEntity.employe.user.type_user.type_user
         : null;
-      await this.authPreservice.generateRefreshToken(
+      await this.tokenService.generateRefreshToken(
         dataLevels[0],
         dataLevels[1],
         dataLevels[2],
         res,
       );
-      const accessToken = await this.authPreservice.generateToken(
-        dataLevels[0],
-        dataLevels[1],
-        dataLevels[2],
-      );
-      return { accessToken, userEntity };
+      return { ok: true };
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
   }
 
   @Post('validate_identity')
+  @UseGuards(AuthGuard('jwt'))
   async Validate_Identity(@Body() data: Preform_Password_Recovery_DTO) {
     try {
-      const user = await this.authPreservice.Find_User_for_Change_Password(
+      const user = await this.userService.Find_User_for_Change_Password(
         data.username,
         data.email,
         data.phone,
       );
-      const passwordToken = await this.authPreservice.generateTokenPassword(
+      const passwordToken = await this.tokenService.generateTokenPassword(
         user.id,
       );
-      return { ok: true, passwordToken };
+      return passwordToken;
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
   }
 
-  @Put('change_password')
+  @Patch('change_password')
   @UseGuards(AuthGuard('jwt-pass'))
   async Change_Password(
     @Req() req: Request,
     @Body() data: Form_Password_Recovery_DTO,
   ) {
     try {
-      await this.authPreservice.Change_Password(req.user['id'], data.password);
+      await this.userService.Change_Password(req.user['id'], data.password);
       return { ok: true, message: 'Tu contraseña ha sido cambiada' };
     } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+  }
+
+  @Patch('change_foto')
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FileInterceptor('photo'))
+  async Change_Foto(
+    @Req() req: Request,
+    @UploadedFile() photo: Express.Multer.File,
+  ) {
+    const user = req.user;
+    try {
+      const typeSesion = {
+        Estudiante: await this.studentService.Sesion_Student_With_Jwt(
+          user['id'],
+        ),
+        Maestro: await this.teacherService.Sesion_Teacher_With_Jwt(user['id']),
+      };
+      let userEntity: any;
+      if (Object.keys(typeSesion).includes(user['secondLevel']))
+        userEntity = typeSesion[`${user['secondLevel']}`];
+      else if (Object.keys(typeSesion).includes(user['thirdLevel']))
+        userEntity = typeSesion[`${user['thirdLevel']}`];
+      else
+        throw new HttpException(
+          'Error del servidor.',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      const sesion = keySesionType[`${user['secondLevel']}`];
+      const idUser = userEntity.user
+        ? userEntity.user.id
+        : userEntity[sesion].user.id;
+      await this.userService.Update_User_Service(idUser, {
+        photo: photo.buffer.toString(),
+      });
+      // data:image/jpeg;base64, in HTML
+      return { ok: true };
+    } catch (error) {
+      console.log(error);
       throw new HttpException(error.message, error.status);
     }
   }

@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import Employees from './employe.entity';
+import Jobs from './job.entity';
 import Users from './user.entity';
 
 @Entity({ name: 'types_users' })
@@ -24,4 +25,16 @@ export class TypesEmployees {
 
   @OneToMany(() => Employees, (employe) => employe.type_employe)
   employees: Employees[];
+}
+
+@Entity({ name: 'types_jobs' })
+export class TypesJobs {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('varchar', { length: 15, unique: true })
+  type_job: string;
+
+  @OneToMany(() => Jobs, (job) => job.type_job)
+  jobs: Jobs[];
 }

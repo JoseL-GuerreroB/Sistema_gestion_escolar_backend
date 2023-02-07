@@ -1,4 +1,4 @@
-import { IntersectionType, OmitType, PickType } from '@nestjs/mapped-types';
+import { IntersectionType, PickType } from '@nestjs/mapped-types';
 import {
   IsInt,
   IsNumber,
@@ -7,7 +7,7 @@ import {
   Length,
   ValidationArguments,
 } from 'class-validator';
-import { User } from './user_dto';
+import { Update_Private_User, User } from './user_dto';
 
 export class Student {
   @IsString({
@@ -52,9 +52,9 @@ export class Update_Public_Data_Student_DTO extends PickType(User, [
   'phone',
 ] as const) {}
 
-export class Update_Private_Data_Student_DTO extends OmitType(
-  Create_Student_DTO,
-  ['password'] as const,
+export class Update_Private_Data_Student_DTO extends IntersectionType(
+  Update_Private_User,
+  Student,
 ) {
   @IsNumber(undefined, {
     message: 'El status del estudiante no se selecciono adecuadamente',

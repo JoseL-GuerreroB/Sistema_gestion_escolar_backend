@@ -1,5 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToOne,
+} from 'typeorm';
 import Employees from './employe.entity';
+import { TypesJobs } from './type_atr.entity';
 
 @Entity({ name: 'jobs' })
 export default class Jobs {
@@ -14,6 +21,9 @@ export default class Jobs {
 
   @Column('varchar', { length: 25 })
   salary_period: string;
+
+  @ManyToOne(() => TypesJobs, (typejob) => typejob.jobs)
+  type_job: TypesJobs;
 
   @OneToMany(() => Employees, (employe) => employe.job)
   enployees: Employees[];

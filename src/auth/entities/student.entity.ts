@@ -20,7 +20,13 @@ export default class Students {
   @Column('varchar', { length: 10 })
   tutor_phone: string;
 
-  @ManyToOne(() => StatusStudents, (statusstundent) => statusstundent.students)
+  @ManyToOne(
+    () => StatusStudents,
+    (statusstundent) => statusstundent.students,
+    {
+      onDelete: 'SET NULL',
+    },
+  )
   status_student: StatusStudents;
 
   @OneToOne(() => Users)

@@ -1,21 +1,29 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
 
 import Users from './entities/user.entity';
 import Students from './entities/student.entity';
 import Employees from './entities/employe.entity';
 import Teachers from './entities/teacher.entity';
-import { TypesEmployees, TypesUsers } from './entities/type_atr.entity';
+import {
+  TypesEmployees,
+  TypesJobs,
+  TypesUsers,
+} from './entities/type_atr.entity';
 import { StatusEmployees, StatusStudents } from './entities/status_atr.entity';
 import Jobs from './entities/job.entity';
 
-import AuthStudentController from './controllers/auth_student.controller';
 import SesionsController from './controllers/sesion.controller';
+import { StudentController } from './controllers/student.controller';
+import TeacherController from './controllers/teacher.controller';
 
-import AuthStudentService from './services/auth_student.service';
-import AuthPreservice from './services/auth_pre.service';
+import UserService from './services/user.service';
+import StudentService from './services/student.service';
+import EmployeService from './services/employe.service';
+import TeacherService from './services/teacher.service';
+import TokenService from './services/token.service';
 
-import { JwtModule } from '@nestjs/jwt';
 import AccessTokenStrategy from './helpers/strategies/accessToken.strategy';
 import RefreshAccessTokenStrategy from './helpers/strategies/refreshAccessToken.strategy';
 import PasswordTokenStrategy from './helpers/strategies/tokenPassword.strategy';
@@ -27,6 +35,7 @@ import PasswordTokenStrategy from './helpers/strategies/tokenPassword.strategy';
       Users,
       TypesUsers,
       TypesEmployees,
+      TypesJobs,
       Students,
       Employees,
       Teachers,
@@ -35,14 +44,17 @@ import PasswordTokenStrategy from './helpers/strategies/tokenPassword.strategy';
       Jobs,
     ]),
   ],
-  controllers: [SesionsController, AuthStudentController],
+  controllers: [SesionsController, StudentController, TeacherController],
   providers: [
     PasswordTokenStrategy,
     RefreshAccessTokenStrategy,
     AccessTokenStrategy,
-    AuthPreservice,
-    AuthStudentService,
+    TokenService,
+    UserService,
+    StudentService,
+    EmployeService,
+    TeacherService,
   ],
-  exports: [AuthStudentService],
+  exports: [StudentService],
 })
 export class AuthModule {}

@@ -12,23 +12,14 @@ export const keysEmployeData = [
   'type_employe',
   'job',
 ];
-export const keysTeacherData = ['speciality', 'presentation'];
+export const keysTeacherData = [
+  'speciality',
+  'presentation',
+  'cubicle',
+  'pass_rate',
+  'failure_rate',
+];
 
-export const propsUserSchema = {
-  username: undefined,
-  first_name: undefined,
-  last_name: undefined,
-  date_of_birth: undefined,
-  age: undefined,
-  address: undefined,
-  gender: undefined,
-  nationality: undefined,
-  email: undefined,
-  password: undefined,
-};
-
-export const propsStudentSchema = {
-  tutor: undefined,
-  tutor_phone: undefined,
-  status_student: undefined,
+export const keySesionType = {
+  Empleado: 'employe',
 };

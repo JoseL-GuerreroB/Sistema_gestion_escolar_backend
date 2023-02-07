@@ -16,7 +16,7 @@ export default class Employees {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('varchar', { length: 500 })
+  @Column('varchar', { length: 500, nullable: true })
   observations?: string;
 
   @Column('time')
@@ -35,12 +35,22 @@ export default class Employees {
   @JoinColumn()
   user: Users;
 
-  @ManyToOne(() => TypesEmployees, (typeemploye) => typeemploye.employees)
+  @ManyToOne(() => TypesEmployees, (typeemploye) => typeemploye.employees, {
+    onDelete: 'SET NULL',
+  })
   type_employe: TypesEmployees;
 
-  @ManyToOne(() => StatusEmployees, (statusemploye) => statusemploye.employees)
+  @ManyToOne(
+    () => StatusEmployees,
+    (statusemploye) => statusemploye.employees,
+    {
+      onDelete: 'SET NULL',
+    },
+  )
   status_employe: StatusEmployees;
 
-  @ManyToOne(() => Jobs, (job) => job.enployees)
+  @ManyToOne(() => Jobs, (job) => job.enployees, {
+    onDelete: 'SET NULL',
+  })
   job: Jobs;
 }

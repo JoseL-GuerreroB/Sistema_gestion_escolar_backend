@@ -6,6 +6,9 @@ export default class Users {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column('blob', { nullable: true })
+  photo: string;
+
   @Column('varchar', { length: 20, unique: true })
   username: string;
 
@@ -42,6 +45,8 @@ export default class Users {
   @Column('varchar')
   password: string;
 
-  @ManyToOne(() => TypesUsers, (typeuser) => typeuser.users)
+  @ManyToOne(() => TypesUsers, (typeuser) => typeuser.users, {
+    onDelete: 'SET NULL',
+  })
   type_user: TypesUsers;
 }
