@@ -1,3 +1,6 @@
+import { EvaluationsStudents } from 'src/grade_and_group/entities/evaluation.entity';
+import GradesAndGroups from 'src/grade_and_group/entities/grade_and_group.entity';
+import SemestersAverages from 'src/grade_and_group/entities/semester.entity';
 import {
   Entity,
   Column,
@@ -5,6 +8,7 @@ import {
   ManyToOne,
   OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { StatusStudents } from './status_atr.entity';
 import Users from './user.entity';
@@ -29,7 +33,16 @@ export default class Students {
   )
   status_student: StatusStudents;
 
+  @ManyToOne(() => GradesAndGroups, (gag) => gag.students)
+  grade_and_group: GradesAndGroups;
+
   @OneToOne(() => Users)
   @JoinColumn()
   user: Users;
+
+  @OneToMany(() => EvaluationsStudents, (evalstdnt) => evalstdnt.student)
+  evaluations_students: EvaluationsStudents[];
+
+  @OneToMany(() => SemestersAverages, (semesteravg) => semesteravg.student)
+  semesters_averages: SemestersAverages[];
 }

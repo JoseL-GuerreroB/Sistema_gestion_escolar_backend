@@ -122,7 +122,7 @@ export default class SesionsController {
         ? userEntity.user.type_user.type_user
         : userEntity.employe.user.type_user.type_user;
       dataLevels[2] = userEntity.employe
-        ? userEntity.employe.user.type_user.type_user
+        ? userEntity.employe.type_employe.type_employe
         : null;
       await this.tokenService.generateRefreshToken(
         dataLevels[0],
@@ -178,16 +178,16 @@ export default class SesionsController {
     const user = req.user;
     try {
       const typeSesion = {
-        Estudiante: await this.studentService.Sesion_Student_With_Jwt(
-          user['id'],
-        ),
-        Maestro: await this.teacherService.Sesion_Teacher_With_Jwt(user['id']),
+        Estudiante: async (userid: any) =>
+          await this.studentService.Sesion_Student_With_Jwt(userid),
+        Maestro: async (userid: any) =>
+          await this.teacherService.Sesion_Teacher_With_Jwt(userid),
       };
       let userEntity: any;
       if (Object.keys(typeSesion).includes(user['secondLevel']))
-        userEntity = typeSesion[`${user['secondLevel']}`];
+        userEntity = typeSesion[`${user['secondLevel']}`](user['id']);
       else if (Object.keys(typeSesion).includes(user['thirdLevel']))
-        userEntity = typeSesion[`${user['thirdLevel']}`];
+        userEntity = typeSesion[`${user['thirdLevel']}`](user['id']);
       else
         throw new HttpException(
           'Error del servidor.',

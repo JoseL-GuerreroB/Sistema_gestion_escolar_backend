@@ -11,6 +11,7 @@ export const keysEmployeData = [
   'observations',
   'type_employe',
   'job',
+  'status_employe',
 ];
 export const keysTeacherData = [
   'speciality',

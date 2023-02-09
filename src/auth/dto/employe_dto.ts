@@ -58,14 +58,6 @@ export class Update_Private_Employe extends IntersectionType(
   Employe,
 ) {
   @IsNumber(undefined, {
-    message: 'El tipo del empleado no se selecciono adecuadamente',
-  })
-  @IsInt({
-    message: 'El tipo del empleado no se selecciono adecuadamente',
-  })
-  type_employe: number;
-
-  @IsNumber(undefined, {
     message: 'El status del empleado no se selecciono adecuadamente',
   })
   @IsInt({

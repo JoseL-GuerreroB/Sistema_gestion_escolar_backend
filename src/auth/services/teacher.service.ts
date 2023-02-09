@@ -56,7 +56,7 @@ export default class TeacherService {
     const propsEmploye = {};
     const propsTeacher = {};
     Object.entries(data).forEach(([key, values]) => {
-      if (!keysEmployeData.includes(key) && !keysTeacherData)
+      if (!keysEmployeData.includes(key) && !keysTeacherData.includes(key))
         propsUser[key] = values;
       else if (!keysTeacherData.includes(key)) propsEmploye[key] = values;
       else propsTeacher[key] = values;

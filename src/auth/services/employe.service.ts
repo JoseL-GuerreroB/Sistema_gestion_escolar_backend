@@ -45,14 +45,6 @@ export default class EmployeService {
 
   async Update_Employe_Service(idEmploye: number, data: any) {
     const employe = data;
-    if (data['type_employe']) {
-      const typeEmploye = await this.TypeEmployeRepository.findOne({
-        where: {
-          id: data['type_employe'],
-        },
-      });
-      employe['type_employe'] = typeEmploye;
-    }
     if (data['status_employe']) {
       const statusEmploye = await this.StatusEmployeRepository.findOne({
         where: {

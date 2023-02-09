@@ -37,15 +37,11 @@ export default class UserService {
       findOwnerUser.id === idUser
     )
       return false;
-    else if (
-      findOwnerUser[uniqueString] === findUser[uniqueString] &&
-      findOwnerUser.id !== idUser
-    )
+    else
       throw new HttpException(
         `El ${uniqueString} que ingresaste ya lo tiene otro usuario`,
         HttpStatus.CONFLICT,
       );
-    else return value;
   }
 
   async UsernameAndEmailAlreadyRegistered(username: string, email: string) {
@@ -112,6 +108,7 @@ export default class UserService {
   }
 
   async Update_User_Service(idUser: number, data: any) {
+    console.log(data);
     await this.UserRepository.update({ id: idUser }, data);
     return;
   }

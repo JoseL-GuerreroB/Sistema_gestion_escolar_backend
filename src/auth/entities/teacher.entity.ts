@@ -1,7 +1,9 @@
+import Classes from 'src/grade_and_group/entities/class_g.entity';
 import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -30,4 +32,7 @@ export default class Teachers {
   @OneToOne(() => Employees)
   @JoinColumn()
   employe: Employees;
+
+  @OneToMany(() => Classes, (classe) => classe.teacher)
+  classes: Classes[];
 }

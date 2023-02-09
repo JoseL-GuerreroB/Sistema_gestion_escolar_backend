@@ -13,6 +13,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import {
   Create_Teacher_DTO,
+  Update_Private_Data_Teacher_DTO,
   Update_Public_Data_Teacher_DTO,
 } from '../dto/teacher_dto';
 import { keysEmployeData, keysTeacherData } from '../helpers/capture_key';
@@ -66,7 +67,7 @@ export default class TeacherController {
     }
   }
 
-  @Put('public_teacher')
+  @Put('public_update')
   @UseGuards(AuthGuard('jwt'))
   async Public_Update_Teacher(
     @Body() data: Update_Public_Data_Teacher_DTO,
@@ -86,6 +87,7 @@ export default class TeacherController {
       const newDataTeacher = data;
       const { propsUser, propsEmploye, propsTeacher } =
         this.teacherService.Teacher_Data_Separation(newDataTeacher);
+      console.log(propsUser, propsEmploye, propsTeacher);
       await this.userService.Update_User_Service(
         teacher.employe.user.id,
         propsUser,
@@ -102,14 +104,15 @@ export default class TeacherController {
         );
       return await this.teacherService.Sesion_Teacher_With_Jwt(teacher.id);
     } catch (error) {
+      console.log(error);
       throw new HttpException(error.message, error.status);
     }
   }
 
-  @Put('private_teacher')
+  @Put('private_update')
   @UseGuards(AuthGuard('jwt'))
   async Private_Update_Teacher(
-    @Body() data: Update_Public_Data_Teacher_DTO,
+    @Body() data: Update_Private_Data_Teacher_DTO,
     @Req() req: Request,
   ) {
     const user = req.user;
