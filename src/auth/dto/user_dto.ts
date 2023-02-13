@@ -130,6 +130,20 @@ export class User {
   })
   phone?: string;
 
+  @IsNumber(undefined, {
+    each: true,
+    message: 'El valor $value no es un numero',
+  })
+  @IsInt({
+    each: true,
+    message: 'El valor $value no es un entero',
+  })
+  @IsPositive({
+    each: true,
+    message: 'El valor $value no es un numero positivo',
+  })
+  roles: number[];
+
   @IsEmail(undefined, {
     message: 'El formato del correo electronico no es correcto',
   })

@@ -4,6 +4,9 @@ export const keysStudentData = [
   'status_student',
   'grade_and_group',
 ];
+
+export const keysSuperUserData = ['high_level_title'];
+
 export const keysEmployeData = [
   'entry_time',
   'departure_time',
@@ -20,6 +23,10 @@ export const keysTeacherData = [
   'pass_rate',
   'failure_rate',
 ];
+
+export const keysAdminData = ['area', 'type_administrator'];
+
+export const keysSuperAdminData = ['position'];
 
 export const keySesionType = {
   Empleado: 'employe',

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   HttpException,
+  Param,
   Post,
   Put,
   Req,
@@ -20,22 +21,21 @@ import {
 } from '../dto/student_dto';
 
 import StudentService from '../services/student.service';
-import TokenService from '../services/token.service';
 import UserService from '../services/user.service';
+import { Roles } from '../helpers/roles/role.decorator';
+import { RolesGuard } from '../helpers/roles/role.guard';
 
 @Controller('auth_student')
 export class StudentController {
   constructor(
     private readonly userService: UserService,
     private readonly studentService: StudentService,
-    private readonly tokenServise: TokenService,
   ) {}
 
   @Post('register')
-  async Register_Student(
-    @Body() data: Create_Student_DTO,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  @Roles('Administrador de estudiantes')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  async Register_Student(@Body() data: Create_Student_DTO) {
     try {
       const dataUser = {};
       const dataStudent = {};
@@ -44,24 +44,16 @@ export class StudentController {
         else dataStudent[key] = values;
       });
       const user = await this.userService.Create_User_Service(dataUser, 1);
-      const student = await this.studentService.Create_Student_Service(
-        user,
-        dataStudent,
-      );
-      await this.tokenServise.generateRefreshToken(
-        student.id,
-        user.type_user.type_user,
-        null,
-        res,
-      );
-      return { ok: true };
+      await this.studentService.Create_Student_Service(user, dataStudent);
+      return { ok: true, message: 'Estudiante creado exitosamente' };
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
   }
 
   @Put('public_update')
-  @UseGuards(AuthGuard('jwt'))
+  @Roles('Estudiante')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   async Public_Update_Student(
     @Body() data: Update_Public_Data_Student_DTO,
     @Req() req: Request,
@@ -96,16 +88,15 @@ export class StudentController {
     }
   }
 
-  @Put('private_update')
-  @UseGuards(AuthGuard('jwt'))
+  @Put('private_update/:id')
+  @Roles('Administrador de estudiantes')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   async Private_Update_Student(
     @Body() data: Update_Private_Data_Student_DTO,
-    @Req() req: Request,
+    @Param('id') id: number,
   ) {
     try {
-      const student = await this.studentService.Sesion_Student_With_Jwt(
-        req.user['id'],
-      );
+      const student = await this.studentService.Sesion_Student_With_Jwt(id);
       const newUsername = await this.userService.UniqueStringValidatorFromUser(
         student.user.id,
         'username',
@@ -122,26 +113,25 @@ export class StudentController {
       const { propsUser, propsStudent } =
         this.studentService.Student_Data_Separation(newData);
       await this.userService.Update_User_Service(student.user.id, propsUser);
-      const newDataStudent = await this.studentService.Update_Student_Service(
+      await this.studentService.Update_Student_Service(
         student.id,
         propsStudent,
       );
-      return newDataStudent;
+      return { ok: true, message: 'El estudiante se actualizo exitosamente' };
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
   }
 
-  @Delete('delete')
-  @UseGuards(AuthGuard('jwt'))
+  @Delete('delete/:id')
+  @Roles('Administrador de estudiantes')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   async Delete_Student(
-    @Req() req: Request,
+    @Param('id') id: number,
     @Res({ passthrough: true }) res: Response,
   ) {
     try {
-      const student = await this.studentService.Sesion_Student_With_Jwt(
-        req.user['id'],
-      );
+      const student = await this.studentService.Sesion_Student_With_Jwt(id);
       const message = await this.studentService.Delete_Student_Service(
         student.id,
       );

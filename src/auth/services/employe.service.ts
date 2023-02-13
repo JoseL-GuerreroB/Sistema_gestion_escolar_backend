@@ -27,7 +27,7 @@ export default class EmployeService {
     });
     const typeEmploye = await this.TypeEmployeRepository.findOne({
       where: {
-        id: 1,
+        id: data.type_employe,
       },
     });
     const jobEmploye = await this.JobRepository.findOne({

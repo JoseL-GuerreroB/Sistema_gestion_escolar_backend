@@ -10,7 +10,7 @@ import Students from '../entities/student.entity';
 export default class StudentService {
   constructor(
     @InjectRepository(Students)
-    private StudentRepositoty: Repository<Students>,
+    private StudentRepository: Repository<Students>,
     @InjectRepository(StatusStudents)
     private StatusStudentRepository: Repository<StatusStudents>,
   ) {}
@@ -24,13 +24,14 @@ export default class StudentService {
     });
     student['status_student'] = statusStudent;
     student['user'] = fromUser;
-    student = this.StudentRepositoty.create(student);
-    return await this.StudentRepositoty.save(student);
+    student = this.StudentRepository.create(student);
+    await this.StudentRepository.save(student);
+    return;
   }
 
   async Login_Student(fromUser: object) {
-    const existStudent = await this.StudentRepositoty.findOne({
-      relations: ['user', 'user.type_user', 'status_student'],
+    const existStudent = await this.StudentRepository.findOne({
+      relations: ['user', 'user.type_user', 'status_student', 'user.roles'],
       where: {
         user: fromUser,
       },
@@ -44,7 +45,7 @@ export default class StudentService {
   }
 
   async Sesion_Student_With_Jwt(id: number) {
-    const student = await this.StudentRepositoty.findOne({
+    const student = await this.StudentRepository.findOne({
       relations: ['user', 'user.type_user', 'status_student'],
       where: {
         id,
@@ -74,12 +75,12 @@ export default class StudentService {
       });
       student['status_student'] = status_student;
     }
-    await this.StudentRepositoty.update({ id: idStudent }, student);
+    await this.StudentRepository.update({ id: idStudent }, student);
     return await this.Sesion_Student_With_Jwt(idStudent);
   }
 
   async Delete_Student_Service(idStudent: number) {
-    await this.StudentRepositoty.delete({ id: idStudent });
+    await this.StudentRepository.delete({ id: idStudent });
     return { ok: true, message: 'Estudiante eliminado' };
   }
 }

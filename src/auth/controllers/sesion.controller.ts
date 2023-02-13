@@ -23,9 +23,12 @@ import {
   Preform_Password_Recovery_DTO,
 } from '../dto/user_dto';
 import { keySesionType } from '../helpers/capture_key';
+import AdministratorService from '../services/administrator.service';
 import EmployeService from '../services/employe.service';
 
 import StudentService from '../services/student.service';
+import SuperAdministratorService from '../services/super_admin.service';
+import SuperUserService from '../services/super_user.service';
 import TeacherService from '../services/teacher.service';
 import TokenService from '../services/token.service';
 import UserService from '../services/user.service';
@@ -37,6 +40,9 @@ export default class SesionsController {
     private readonly studentService: StudentService,
     private readonly employeService: EmployeService,
     private readonly teacherService: TeacherService,
+    private readonly adminService: AdministratorService,
+    private readonly superAdminService: SuperAdministratorService,
+    private readonly superUserService: SuperUserService,
     private readonly tokenService: TokenService,
   ) {}
 
@@ -49,6 +55,7 @@ export default class SesionsController {
         userEntity['id'],
         userEntity['secondLevel'],
         userEntity['thirdLevel'],
+        userEntity['roles'],
       );
       return { ok: true, accessToken };
     } catch (error) {
@@ -62,10 +69,16 @@ export default class SesionsController {
     const user = req.user;
     try {
       const typeSesion = {
-        Estudiante: async (userid: any) =>
+        Estudiante: async (userid: number) =>
           await this.studentService.Sesion_Student_With_Jwt(userid),
-        Maestro: async (userid: any) =>
+        Maestro: async (userid: number) =>
           await this.teacherService.Sesion_Teacher_With_Jwt(userid),
+        Administrador: async (userid: number) =>
+          await this.adminService.Sesion_Admin_With_Jwt(userid),
+        SuperAdministrador: async (userid: number) =>
+          await this.superAdminService.Sesion_SuperAdmin_With_Jwt(userid),
+        SuperUsuario: async (userid: number) =>
+          await this.superUserService.Sesion_SuperUser_With_Jwt(userid),
       };
       let userEntity: object;
       if (Object.keys(typeSesion).includes(user['secondLevel']))
@@ -79,7 +92,6 @@ export default class SesionsController {
         );
       return userEntity;
     } catch (error) {
-      console.log(error);
       throw new HttpException(error.message, error.status);
     }
   }
@@ -106,10 +118,25 @@ export default class SesionsController {
           userEntity = await this.studentService.Login_Student(user);
           break;
         case 'Maestro':
-          const employe = await this.employeService.Find_Employe_For_Login(
+          const employeM = await this.employeService.Find_Employe_For_Login(
             user,
           );
-          userEntity = await this.teacherService.Login_Teacher(employe);
+          userEntity = await this.teacherService.Login_Teacher(employeM);
+          break;
+        case 'Administrador':
+          const employeA = await this.employeService.Find_Employe_For_Login(
+            user,
+          );
+          userEntity = await this.adminService.Login_Admin(employeA);
+          break;
+        case 'SuperAdministrador':
+          const employeSA = await this.employeService.Find_Employe_For_Login(
+            user,
+          );
+          userEntity = await this.superAdminService.Login_SuperAdmin(employeSA);
+          break;
+        case 'SuperUsuario':
+          userEntity = await this.superUserService.Login_SuperUser(user);
           break;
         default:
           throw new HttpException(
@@ -124,10 +151,14 @@ export default class SesionsController {
       dataLevels[2] = userEntity.employe
         ? userEntity.employe.type_employe.type_employe
         : null;
+      dataLevels[3] = userEntity.user
+        ? userEntity.user.roles
+        : userEntity.employe.user.roles;
       await this.tokenService.generateRefreshToken(
         dataLevels[0],
         dataLevels[1],
         dataLevels[2],
+        dataLevels[3],
         res,
       );
       return { ok: true };
@@ -182,6 +213,12 @@ export default class SesionsController {
           await this.studentService.Sesion_Student_With_Jwt(userid),
         Maestro: async (userid: any) =>
           await this.teacherService.Sesion_Teacher_With_Jwt(userid),
+        Administrador: async (userid: number) =>
+          await this.adminService.Sesion_Admin_With_Jwt(userid),
+        SuperAdministrador: async (userid: number) =>
+          await this.superAdminService.Sesion_SuperAdmin_With_Jwt(userid),
+        SuperUsuario: async (userid: number) =>
+          await this.superUserService.Sesion_SuperUser_With_Jwt(userid),
       };
       let userEntity: any;
       if (Object.keys(typeSesion).includes(user['secondLevel']))
@@ -203,7 +240,6 @@ export default class SesionsController {
       // data:image/jpeg;base64, in HTML
       return { ok: true };
     } catch (error) {
-      console.log(error);
       throw new HttpException(error.message, error.status);
     }
   }

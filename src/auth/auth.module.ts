@@ -7,6 +7,7 @@ import Students from './entities/student.entity';
 import Employees from './entities/employe.entity';
 import Teachers from './entities/teacher.entity';
 import {
+  TypesAdministrators,
   TypesEmployees,
   TypesJobs,
   TypesUsers,
@@ -27,6 +28,10 @@ import TokenService from './services/token.service';
 import AccessTokenStrategy from './helpers/strategies/accessToken.strategy';
 import RefreshAccessTokenStrategy from './helpers/strategies/refreshAccessToken.strategy';
 import PasswordTokenStrategy from './helpers/strategies/tokenPassword.strategy';
+import Administrators from './entities/administrator.entity';
+import { Roles } from './entities/authorization.entity';
+import AdministratorController from './controllers/administrator.controller';
+import AdministratorService from './services/administrator.service';
 
 @Module({
   imports: [
@@ -42,9 +47,17 @@ import PasswordTokenStrategy from './helpers/strategies/tokenPassword.strategy';
       StatusStudents,
       StatusEmployees,
       Jobs,
+      TypesAdministrators,
+      Administrators,
+      Roles,
     ]),
   ],
-  controllers: [SesionsController, StudentController, TeacherController],
+  controllers: [
+    SesionsController,
+    StudentController,
+    TeacherController,
+    AdministratorController,
+  ],
   providers: [
     PasswordTokenStrategy,
     RefreshAccessTokenStrategy,
@@ -54,6 +67,7 @@ import PasswordTokenStrategy from './helpers/strategies/tokenPassword.strategy';
     StudentService,
     EmployeService,
     TeacherService,
+    AdministratorService,
   ],
   exports: [StudentService],
 })

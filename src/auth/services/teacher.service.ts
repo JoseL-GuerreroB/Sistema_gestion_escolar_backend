@@ -14,7 +14,8 @@ export default class TeacherService {
     let teacher = data;
     teacher['employe'] = fromEmploye;
     teacher = this.TeacherRepository.create(teacher);
-    return await this.TeacherRepository.save(teacher);
+    await this.TeacherRepository.save(teacher);
+    return;
   }
 
   async Login_Teacher(fromEmploye: object) {
@@ -26,6 +27,7 @@ export default class TeacherService {
         'employe.job',
         'employe.user',
         'employe.user.type_user',
+        'employe.user.roles',
       ],
       where: {
         employe: fromEmploye,

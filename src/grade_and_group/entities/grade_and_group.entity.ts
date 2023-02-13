@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import Classes from './class_g.entity';
-import SemestersAverages, { Semesters } from './semester.entity';
+import { SemestersAverages, Semesters } from './semester.entity';
 
 @Entity({ name: 'grades_and_groups' })
 export default class GradesAndGroups {

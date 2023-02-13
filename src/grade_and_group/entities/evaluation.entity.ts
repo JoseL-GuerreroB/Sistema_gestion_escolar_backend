@@ -10,6 +10,21 @@ import Classes from './class_g.entity';
 import { Partials } from './help_class.entity';
 import { SemestersEvaluations } from './semester.entity';
 
+@Entity({ name: 'status_evaluations' })
+export class StatusEvaluations {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('varchar', { length: 15, unique: true })
+  status_evaluation: string;
+
+  @OneToMany(
+    () => EvaluationsStudents,
+    (evalstdnt) => evalstdnt.status_evaluation,
+  )
+  evaluations_students: EvaluationsStudents[];
+}
+
 @Entity({ name: 'evaluations_students' })
 export class EvaluationsStudents {
   @PrimaryGeneratedColumn()
@@ -68,19 +83,4 @@ export class PartialsEvaluations {
     onDelete: 'SET NULL',
   })
   partial: Partials;
-}
-
-@Entity({ name: 'status_evaluations' })
-export class StatusEvaluations {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column('varchar', { length: 15, unique: true })
-  status_evaluation: string;
-
-  @OneToMany(
-    () => EvaluationsStudents,
-    (evalstdnt) => evalstdnt.status_evaluation,
-  )
-  evaluations_students: EvaluationsStudents[];
 }

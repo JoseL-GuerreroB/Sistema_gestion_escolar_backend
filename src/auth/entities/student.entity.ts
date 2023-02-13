@@ -1,6 +1,6 @@
 import { EvaluationsStudents } from 'src/grade_and_group/entities/evaluation.entity';
 import GradesAndGroups from 'src/grade_and_group/entities/grade_and_group.entity';
-import SemestersAverages from 'src/grade_and_group/entities/semester.entity';
+import { SemestersAverages } from 'src/grade_and_group/entities/semester.entity';
 import {
   Entity,
   Column,

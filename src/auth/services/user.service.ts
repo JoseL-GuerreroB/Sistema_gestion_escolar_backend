@@ -1,10 +1,11 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { comparePasswords, encryptPassword } from '../helpers/bcrypt';
 
 import { TypesUsers } from '../entities/type_atr.entity';
 import Users from '../entities/user.entity';
+import { Roles } from '../entities/authorization.entity';
 
 @Injectable()
 export default class UserService {
@@ -12,6 +13,7 @@ export default class UserService {
     @InjectRepository(Users) private UserRepository: Repository<Users>,
     @InjectRepository(TypesUsers)
     private TypeUserRepository: Repository<TypesUsers>,
+    @InjectRepository(Roles) private RoleRepository: Repository<Roles>,
   ) {}
 
   async UniqueStringValidatorFromUser(
@@ -84,6 +86,17 @@ export default class UserService {
         'Tipo de usuario no registrado',
         HttpStatus.NOT_FOUND,
       );
+    const roles = await this.RoleRepository.find({
+      where: {
+        id: In(newUser.roles),
+      },
+    });
+    if (roles.length === 0)
+      throw new HttpException(
+        'Los roles no fueron encontrados',
+        HttpStatus.NOT_FOUND,
+      );
+    user['roles'] = roles;
     user['type_user'] = typeUser;
     user = this.UserRepository.create(user);
     return await this.UserRepository.save(user);
@@ -108,8 +121,14 @@ export default class UserService {
   }
 
   async Update_User_Service(idUser: number, data: any) {
-    console.log(data);
-    await this.UserRepository.update({ id: idUser }, data);
+    const user = data;
+    const roles = await this.RoleRepository.find({
+      where: {
+        id: In(data.roles),
+      },
+    });
+    user.roles = roles;
+    await this.UserRepository.update({ id: idUser }, user);
     return;
   }
 

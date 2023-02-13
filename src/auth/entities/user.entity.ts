@@ -1,4 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Roles } from './authorization.entity';
 import { TypesUsers } from './type_atr.entity';
 
 @Entity({ name: 'users' })
@@ -49,4 +57,16 @@ export default class Users {
     onDelete: 'SET NULL',
   })
   type_user: TypesUsers;
+
+  @ManyToMany(() => Roles, (role) => role.users)
+  @JoinTable({
+    name: 'users_roles',
+    joinColumn: {
+      name: 'userId',
+    },
+    inverseJoinColumn: {
+      name: 'roleId',
+    },
+  })
+  roles: Roles[];
 }

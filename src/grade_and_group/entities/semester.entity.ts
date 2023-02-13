@@ -40,7 +40,7 @@ export class SemestersEvaluations {
 }
 
 @Entity({ name: 'semesters_averages' })
-export default class SemestersAverages {
+export class SemestersAverages {
   @PrimaryGeneratedColumn()
   id: number;
 

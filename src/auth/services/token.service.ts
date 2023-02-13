@@ -10,10 +10,16 @@ export default class TokenService {
     private configService: ConfigService,
   ) {}
 
-  async generateToken(id: number, secondLevel: string, thirdLevel: string) {
+  async generateToken(
+    id: number,
+    secondLevel: string,
+    thirdLevel: string,
+    roles: any[],
+  ) {
     const JwtPayload: object = {
       id,
       secondLevel,
+      roles: roles.map((role) => role.role),
     };
     if (thirdLevel) JwtPayload['thirdLevel'] = thirdLevel;
     return await this.JWTService.signAsync(JwtPayload, {
@@ -26,11 +32,13 @@ export default class TokenService {
     id: number,
     secondLevel: string,
     thirdLevel: string | null,
+    roles: string[],
     res: Response,
   ) {
     const JwtPayload: object = {
       id,
       secondLevel,
+      roles,
     };
     if (thirdLevel !== null) JwtPayload['thirdLevel'] = thirdLevel;
     const refreshToken = await this.JWTService.signAsync(JwtPayload, {

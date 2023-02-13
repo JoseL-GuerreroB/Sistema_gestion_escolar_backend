@@ -1,4 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import Administrators from './administrator.entity';
 import Employees from './employe.entity';
 import Jobs from './job.entity';
 import Users from './user.entity';
@@ -37,4 +38,16 @@ export class TypesJobs {
 
   @OneToMany(() => Jobs, (job) => job.type_job)
   jobs: Jobs[];
+}
+
+@Entity({ name: 'types_administrators' })
+export class TypesAdministrators {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('varchar', { length: 15, unique: true })
+  type_administrator: string;
+
+  @OneToMany(() => Administrators, (admin) => admin.type_administrator)
+  administrators: Administrators[];
 }
